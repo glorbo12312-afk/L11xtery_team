@@ -1,7 +1,7 @@
 -- ============================================
--- SWILL FORCE DISPLAY v7 - СВОРАЧИВАНИЕ В КНОПКУ
+-- SWILL FORCE DISPLAY v9 - ТОЛЬКО ASSET ID
 -- L11xtery Team SS 🎄
--- Ключ: Yrdhhdbxxnvdb
+-- Ключ: L11xteryteam001
 -- ============================================
 
 local player = game:GetService("Players").LocalPlayer
@@ -41,44 +41,49 @@ local RequireMethods = {
 }
 
 -- ============================================
--- ПАРСИНГ REQUIRE СТРОКИ
+-- ПАРСИНГ REQUIRE СТРОКИ (ТОЛЬКО ASSET ID)
 -- ============================================
 local function ParseRequireString(code)
-    local pattern1 = "require%(%)%.(%w+)%(([^)]*)%)"
-    local method, args = string.match(code, pattern1)
+    -- require(123456789):method("args")
+    local pattern1 = 'require%((%d+)%)%.(%w+)%("([^"]*)"%)'
+    local assetId, method, args = string.match(code, pattern1)
     
-    if method and args then
+    if assetId and method and args then
         return {
             Type = "require",
             Method = method,
             Args = args,
+            AssetId = tonumber(assetId),
             Full = code,
             IsValid = true
         }
     end
     
-    local pattern2 = 'require%(%)%.(%w+)%("([^"]*)"%)'
-    local method2, args2 = string.match(code, pattern2)
+    -- require(123456789):method(args)
+    local pattern2 = 'require%((%d+)%)%.(%w+)%(([^)]*)%)'
+    local assetId2, method2, args2 = string.match(code, pattern2)
     
-    if method2 and args2 then
+    if assetId2 and method2 and args2 then
         return {
             Type = "require",
             Method = method2,
             Args = args2,
+            AssetId = tonumber(assetId2),
             Full = code,
             IsValid = true
         }
     end
     
-    local pattern3 = 'require%("([^"]*)"%)%.(%w+)%(([^)]*)%)'
-    local moduleName, method3, args3 = string.match(code, pattern3)
+    -- require(123456789):method() (без аргументов)
+    local pattern3 = 'require%((%d+)%)%.(%w+)%(%)'
+    local assetId3, method3 = string.match(code, pattern3)
     
-    if moduleName and method3 and args3 then
+    if assetId3 and method3 then
         return {
             Type = "require",
             Method = method3,
-            Args = args3,
-            Module = moduleName,
+            Args = "",
+            AssetId = tonumber(assetId3),
             Full = code,
             IsValid = true
         }
@@ -101,68 +106,70 @@ local function CreateRemote()
     serverScript.Source = [[
         local remote = game.ReplicatedStorage:FindFirstChild("SWILL_RemoteExecute")
         if remote then
-            remote.OnServerEvent:Connect(function(player, method, args, moduleName)
+            remote.OnServerEvent:Connect(function(player, method, args, assetId)
                 print("[SWILL] Server require(): " .. tostring(method))
+                print("[SWILL] Asset ID: " .. tostring(assetId))
+                print("[SWILL] Args: " .. tostring(args))
                 
                 local RequireMethodsServer = {}
                 RequireMethodsServer.load = function(playerName)
-                    print("[SWILL] SERVER LOAD: " .. playerName)
+                    print("[SWILL] SERVER LOAD: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_LOAD: " .. playerName
                 end
                 RequireMethodsServer.pls = function(playerName)
-                    print("[SWILL] SERVER PLS: " .. playerName)
+                    print("[SWILL] SERVER PLS: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_PLS: " .. playerName
                 end
                 RequireMethodsServer.fire = function(playerName)
-                    print("[SWILL] SERVER FIRE: " .. playerName)
+                    print("[SWILL] SERVER FIRE: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_FIRE: " .. playerName
                 end
                 RequireMethodsServer.Hload = function(playerName)
-                    print("[SWILL] SERVER HLOAD: " .. playerName)
+                    print("[SWILL] SERVER HLOAD: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_HLOAD: " .. playerName
                 end
                 RequireMethodsServer.hLoad = function(playerName)
-                    print("[SWILL] SERVER HLOAD: " .. playerName)
+                    print("[SWILL] SERVER HLOAD: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_HLOAD: " .. playerName
                 end
                 RequireMethodsServer.exec = function(playerName)
-                    print("[SWILL] SERVER EXEC: " .. playerName)
+                    print("[SWILL] SERVER EXEC: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_EXEC: " .. playerName
                 end
                 RequireMethodsServer.run = function(playerName)
-                    print("[SWILL] SERVER RUN: " .. playerName)
+                    print("[SWILL] SERVER RUN: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_RUN: " .. playerName
                 end
                 RequireMethodsServer.start = function(playerName)
-                    print("[SWILL] SERVER START: " .. playerName)
+                    print("[SWILL] SERVER START: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_START: " .. playerName
                 end
                 RequireMethodsServer.init = function(playerName)
-                    print("[SWILL] SERVER INIT: " .. playerName)
+                    print("[SWILL] SERVER INIT: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_INIT: " .. playerName
                 end
                 RequireMethodsServer.call = function(playerName)
-                    print("[SWILL] SERVER CALL: " .. playerName)
+                    print("[SWILL] SERVER CALL: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_CALL: " .. playerName
                 end
                 RequireMethodsServer.invoke = function(playerName)
-                    print("[SWILL] SERVER INVOKE: " .. playerName)
+                    print("[SWILL] SERVER INVOKE: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_INVOKE: " .. playerName
                 end
                 RequireMethodsServer.trigger = function(playerName)
-                    print("[SWILL] SERVER TRIGGER: " .. playerName)
+                    print("[SWILL] SERVER TRIGGER: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_TRIGGER: " .. playerName
                 end
                 RequireMethodsServer.activate = function(playerName)
-                    print("[SWILL] SERVER ACTIVATE: " .. playerName)
+                    print("[SWILL] SERVER ACTIVATE: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_ACTIVATE: " .. playerName
                 end
                 RequireMethodsServer.launch = function(playerName)
-                    print("[SWILL] SERVER LAUNCH: " .. playerName)
+                    print("[SWILL] SERVER LAUNCH: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_LAUNCH: " .. playerName
                 end
                 RequireMethodsServer.spawn = function(playerName)
-                    print("[SWILL] SERVER SPAWN: " .. playerName)
+                    print("[SWILL] SERVER SPAWN: " .. playerName .. " (Asset: " .. assetId .. ")")
                     return "SERVER_SPAWN: " .. playerName
                 end
                 
@@ -171,7 +178,7 @@ local function CreateRemote()
                     print("[SWILL] Server result: " .. tostring(result))
                 end
             end)
-            print("[SWILL] Remote handler initialized")
+            print("[SWILL] Remote handler initialized (ASSET ID ONLY)")
         end
     ]]
     
@@ -181,63 +188,63 @@ end
 local remoteExec = CreateRemote()
 
 -- ============================================
--- ВЫПОЛНЕНИЕ REQUIRE
+-- ВЫПОЛНЕНИЕ REQUIRE (ТОЛЬКО ASSET ID)
 -- ============================================
-local function ExecuteRequireOnServer(method, args, moduleName)
+local function ExecuteRequireOnServer(method, args, assetId)
     if remoteExec then
-        remoteExec:FireServer(method, args, moduleName)
-        return true, "✅ Сервер: " .. method .. "() отправлен"
+        remoteExec:FireServer(method, args, assetId)
+        return true, "✅ Сервер: " .. method .. "() отправлен (Asset: " .. assetId .. ")"
     end
     return false, "❌ Сервер: Remote не найден"
 end
 
-local function ExecuteRequireOnClient(method, args, moduleName)
+local function ExecuteRequireOnClient(method, args, assetId)
     local RequireMethodsClient = {}
     
     RequireMethodsClient.load = function(playerName)
-        return "CLIENT_LOAD: " .. playerName
+        return "CLIENT_LOAD: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.pls = function(playerName)
-        return "CLIENT_PLS: " .. playerName
+        return "CLIENT_PLS: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.fire = function(playerName)
-        return "CLIENT_FIRE: " .. playerName
+        return "CLIENT_FIRE: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.Hload = function(playerName)
-        return "CLIENT_HLOAD: " .. playerName
+        return "CLIENT_HLOAD: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.hLoad = function(playerName)
-        return "CLIENT_HLOAD: " .. playerName
+        return "CLIENT_HLOAD: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.exec = function(playerName)
-        return "CLIENT_EXEC: " .. playerName
+        return "CLIENT_EXEC: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.run = function(playerName)
-        return "CLIENT_RUN: " .. playerName
+        return "CLIENT_RUN: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.start = function(playerName)
-        return "CLIENT_START: " .. playerName
+        return "CLIENT_START: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.init = function(playerName)
-        return "CLIENT_INIT: " .. playerName
+        return "CLIENT_INIT: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.call = function(playerName)
-        return "CLIENT_CALL: " .. playerName
+        return "CLIENT_CALL: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.invoke = function(playerName)
-        return "CLIENT_INVOKE: " .. playerName
+        return "CLIENT_INVOKE: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.trigger = function(playerName)
-        return "CLIENT_TRIGGER: " .. playerName
+        return "CLIENT_TRIGGER: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.activate = function(playerName)
-        return "CLIENT_ACTIVATE: " .. playerName
+        return "CLIENT_ACTIVATE: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.launch = function(playerName)
-        return "CLIENT_LAUNCH: " .. playerName
+        return "CLIENT_LAUNCH: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     RequireMethodsClient.spawn = function(playerName)
-        return "CLIENT_SPAWN: " .. playerName
+        return "CLIENT_SPAWN: " .. playerName .. " (Asset: " .. assetId .. ")"
     end
     
     if RequireMethodsClient[method] then
@@ -252,12 +259,16 @@ local function ExecuteRequireCode(code)
     local parsed = ParseRequireString(code)
     
     if not parsed.IsValid then
-        return false, "❌ ТОЛЬКО require():method(args) разрешён!"
+        return false, "❌ ТОЛЬКО require(ASSET_ID):method('args') разрешён!"
     end
     
     local method = parsed.Method
     local args = parsed.Args
-    local moduleName = parsed.Module
+    local assetId = parsed.AssetId
+    
+    if not assetId then
+        return false, "❌ ТРЕБУЕТСЯ ASSET ID! Используйте: require(123456789):method('args')"
+    end
     
     local methodFound = false
     for _, m in ipairs(RequireMethods) do
@@ -268,15 +279,15 @@ local function ExecuteRequireCode(code)
     end
     
     if not methodFound then
-        return false, "❌ Неподдерживаемый метод: " .. method
+        return false, "❌ Неподдерживаемый метод: " .. method .. ". Доступны: " .. table.concat(RequireMethods, ", ")
     end
     
-    local success, msg = ExecuteRequireOnClient(method, args, moduleName)
+    local success, msg = ExecuteRequireOnClient(method, args, assetId)
     if success then
         return true, msg
     end
     
-    local serverSuccess, serverMsg = ExecuteRequireOnServer(method, args, moduleName)
+    local serverSuccess, serverMsg = ExecuteRequireOnServer(method, args, assetId)
     if serverSuccess then
         return true, serverMsg
     end
@@ -377,7 +388,7 @@ local function ForceDisplayGUI()
 end
 
 -- ============================================
--- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ДЛЯ СВОРАЧИВАНИЯ
+-- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 -- ============================================
 local isMinimized = false
 local minimizedButton = nil
@@ -388,7 +399,6 @@ local mainGui = nil
 -- СОЗДАНИЕ КНОПКИ В ЛЕВОМ НИЖНЕМ УГЛУ
 -- ============================================
 local function CreateMinimizedButton()
-    -- Удаляем старую кнопку
     if minimizedButton then
         minimizedButton:Destroy()
         minimizedButton = nil
@@ -396,7 +406,7 @@ local function CreateMinimizedButton()
     
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0, 60, 0, 60)
-    btn.Position = UDim2.new(0, 10, 1, -70) -- Левый нижний угол
+    btn.Position = UDim2.new(0, 10, 1, -70)
     btn.BackgroundColor3 = Color3.fromRGB(220, 30, 30)
     btn.Text = "🎄"
     btn.TextColor3 = Color3.fromRGB(255, 215, 0)
@@ -409,7 +419,6 @@ local function CreateMinimizedButton()
     corner.CornerRadius = UDim.new(0, 16)
     corner.Parent = btn
     
-    -- Тень
     local shadow = Instance.new("ImageLabel")
     shadow.Size = UDim2.new(1.3, 0, 1.3, 0)
     shadow.Position = UDim2.new(-0.15, 0, -0.15, 0)
@@ -420,7 +429,6 @@ local function CreateMinimizedButton()
     shadow.ZIndex = 998
     shadow.Parent = btn
     
-    -- Анимация появления
     btn.BackgroundTransparency = 1
     local appear = TweenService:Create(btn, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         BackgroundTransparency = 0
@@ -429,13 +437,11 @@ local function CreateMinimizedButton()
     
     minimizedButton = btn
     
-    -- Открытие GUI при нажатии
     btn.MouseButton1Click:Connect(function()
         if isMinimized then
             isMinimized = false
             btn:Destroy()
             minimizedButton = nil
-            -- Пересоздаём GUI
             CreateForceGUI()
         end
     end)
@@ -449,7 +455,6 @@ end
 local function CreateForceGUI()
     guiService = ForceDisplayGUI()
     
-    -- Если уже есть кнопка - удаляем
     if minimizedButton then
         minimizedButton:Destroy()
         minimizedButton = nil
@@ -470,7 +475,6 @@ local function CreateForceGUI()
     gui.Parent = guiService
     mainGui = gui
     
-    -- ОСНОВНОЙ ФРЕЙМ (УМЕНЬШЕННЫЙ)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(0, 380, 0, 200)
     local centerX = (SCREEN_WIDTH - 380) / 2
@@ -496,7 +500,6 @@ local function CreateForceGUI()
     })
     gradient.Parent = frame
     
-    -- СНЕЖИНКИ
     local snowContainer = Instance.new("Frame")
     snowContainer.Size = UDim2.new(1, 0, 1, 0)
     snowContainer.Position = UDim2.new(0, 0, 0, 0)
@@ -525,7 +528,6 @@ local function CreateForceGUI()
         })
     end
     
-    -- ЗАГОЛОВОК
     local header = Instance.new("Frame")
     header.Size = UDim2.new(1, 0, 0, 45)
     header.Position = UDim2.new(0, 0, 0, 0)
@@ -549,7 +551,6 @@ local function CreateForceGUI()
     title.ZIndex = 3
     title.Parent = header
     
-    -- КНОПКА ЗАКРЫТИЯ (СВОРАЧИВАНИЕ)
     local closeBtn = Instance.new("TextButton")
     closeBtn.Size = UDim2.new(0, 30, 0, 30)
     closeBtn.Position = UDim2.new(1, -38, 0, 7)
@@ -565,7 +566,6 @@ local function CreateForceGUI()
     closeCorner.CornerRadius = UDim.new(0, 8)
     closeCorner.Parent = closeBtn
     
-    -- КНОПКА ЗАКРЫТИЯ (ПОЛНОЕ)
     local fullCloseBtn = Instance.new("TextButton")
     fullCloseBtn.Size = UDim2.new(0, 30, 0, 30)
     fullCloseBtn.Position = UDim2.new(1, -72, 0, 7)
@@ -581,7 +581,6 @@ local function CreateForceGUI()
     fullCloseCorner.CornerRadius = UDim.new(0, 8)
     fullCloseCorner.Parent = fullCloseBtn
     
-    -- ПАНЕЛЬ СОДЕРЖИМОГО
     local contentPanel = Instance.new("Frame")
     contentPanel.Size = UDim2.new(1, 0, 1, -45)
     contentPanel.Position = UDim2.new(0, 0, 0, 45)
@@ -589,7 +588,6 @@ local function CreateForceGUI()
     contentPanel.ZIndex = 1
     contentPanel.Parent = frame
     
-    -- СТАТУС
     local status = Instance.new("TextLabel")
     status.Size = UDim2.new(0.9, 0, 0, 35)
     status.Position = UDim2.new(0.05, 0, 0.02, 0)
@@ -601,7 +599,6 @@ local function CreateForceGUI()
     status.ZIndex = 2
     status.Parent = contentPanel
     
-    -- ПОЛЕ ДЛЯ КЛЮЧА
     local keyBox = Instance.new("TextBox")
     keyBox.Size = UDim2.new(0.7, 0, 0, 40)
     keyBox.Position = UDim2.new(0.15, 0, 0.15, 0)
@@ -618,7 +615,6 @@ local function CreateForceGUI()
     keyCorner.CornerRadius = UDim.new(0, 8)
     keyCorner.Parent = keyBox
     
-    -- КНОПКА ПРОВЕРКИ
     local checkBtn = Instance.new("TextButton")
     checkBtn.Size = UDim2.new(0.25, 0, 0, 40)
     checkBtn.Position = UDim2.new(0.375, 0, 0.4, 0)
@@ -634,7 +630,6 @@ local function CreateForceGUI()
     checkCorner.CornerRadius = UDim.new(0, 8)
     checkCorner.Parent = checkBtn
     
-    -- СКРЫТЫЙ КОНТЕЙНЕР ПОСЛЕ АКТИВАЦИИ
     local hiddenContainer = Instance.new("Frame")
     hiddenContainer.Size = UDim2.new(1, 0, 1, 0)
     hiddenContainer.Position = UDim2.new(0, 0, 0, 0)
@@ -643,13 +638,12 @@ local function CreateForceGUI()
     hiddenContainer.ZIndex = 1
     hiddenContainer.Parent = contentPanel
     
-    -- ПОЛЕ ДЛЯ REQUIRE СКРИПТОВ
     local scriptBox = Instance.new("TextBox")
     scriptBox.Size = UDim2.new(0.85, 0, 0, 200)
     scriptBox.Position = UDim2.new(0.075, 0, 0.02, 0)
     scriptBox.BackgroundColor3 = Color3.fromRGB(20, 50, 20)
     scriptBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    scriptBox.PlaceholderText = "require():load(PlayerName) или require():pls(Name)"
+    scriptBox.PlaceholderText = "require(123456789):Hload('Username')"
     scriptBox.Text = ""
     scriptBox.Font = Enum.Font.Code
     scriptBox.TextSize = 18
@@ -662,7 +656,6 @@ local function CreateForceGUI()
     scriptCorner.CornerRadius = UDim.new(0, 8)
     scriptCorner.Parent = scriptBox
     
-    -- КОНТЕЙНЕР КНОПОК
     local buttonContainer = Instance.new("Frame")
     buttonContainer.Size = UDim2.new(1, 0, 0, 55)
     buttonContainer.Position = UDim2.new(0, 0, 0.82, 0)
@@ -670,7 +663,6 @@ local function CreateForceGUI()
     buttonContainer.ZIndex = 2
     buttonContainer.Parent = hiddenContainer
     
-    -- КНОПКА ВЫПОЛНЕНИЯ
     local execBtn = Instance.new("TextButton")
     execBtn.Size = UDim2.new(0.4, 0, 1, 0)
     execBtn.Position = UDim2.new(0.05, 0, 0, 0)
@@ -686,7 +678,6 @@ local function CreateForceGUI()
     execCorner.CornerRadius = UDim.new(0, 8)
     execCorner.Parent = execBtn
     
-    -- КНОПКА СКАНИРОВАНИЯ
     local scanBtn = Instance.new("TextButton")
     scanBtn.Size = UDim2.new(0.4, 0, 1, 0)
     scanBtn.Position = UDim2.new(0.55, 0, 0, 0)
@@ -747,7 +738,7 @@ local function CreateForceGUI()
     -- ЛОГИКА КЛЮЧА
     -- ============================================
     checkBtn.MouseButton1Click:Connect(function()
-        if keyBox.Text == "Yrdhhdbxxnvdb" then
+        if keyBox.Text == "L11xteryteam001" then
             status.Text = "🎄 ДОСТУП ОТКРЫТ!"
             status.TextColor3 = Color3.fromRGB(30, 220, 30)
             
@@ -765,11 +756,13 @@ local function CreateForceGUI()
             resizeTween:Play()
             
             resizeTween.Completed:Connect(function()
-                status.Text = "🎄 ВСТАВЬТЕ REQUIRE():МЕТОД()"
+                status.Text = "🎄 ТОЛЬКО require(ASSET):METHOD()"
                 status.TextColor3 = Color3.fromRGB(30, 220, 30)
             end)
             
             print("[SWILL] ✅ ДОСТУП АКТИВИРОВАН!")
+            print("[SWILL] 📌 КЛЮЧ: L11xteryteam001")
+            print("[SWILL] 📌 ТОЛЬКО: require(123456789):Hload('Username')")
         else
             status.Text = "❌ НЕВЕРНЫЙ КЛЮЧ!"
             status.TextColor3 = Color3.fromRGB(220, 30, 30)
@@ -777,7 +770,7 @@ local function CreateForceGUI()
     end)
     
     -- ============================================
-    -- ВЫПОЛНЕНИЕ REQUIRE
+    -- ВЫПОЛНЕНИЕ REQUIRE (ТОЛЬКО ASSET ID)
     -- ============================================
     execBtn.MouseButton1Click:Connect(function()
         local code = scriptBox.Text
@@ -814,28 +807,34 @@ local function CreateForceGUI()
         status.Text = "🔍 СКАНИРОВАНИЕ... 🎄"
         status.TextColor3 = Color3.fromRGB(255, 215, 0)
         
-        local results = ScanAllForBackdoors()
+        local success, results = pcall(ScanAllForBackdoors)
         
-        if #results == 0 then
-            status.Text = "🎄 СКАНИРОВАНИЕ ЗАВЕРШЕНО! БЕЗОПАСНО!"
-            status.TextColor3 = Color3.fromRGB(30, 220, 30)
-        else
-            local msg = "⚠ НАЙДЕНО: " .. #results
-            for i = 1, math.min(2, #results) do
-                msg = msg .. " | " .. results[i].Name .. " [" .. results[i].Risk .. "]"
+        if success and results then
+            if #results == 0 then
+                status.Text = "🎄 ПИЗДА СЕРВЕРУ! 🎄"
+                status.TextColor3 = Color3.fromRGB(30, 220, 30)
+                print("[SWILL] 🔥 ПИЗДА СЕРВЕРУ!")
+            else
+                local msg = "⚠ НАЙДЕНО: " .. #results
+                for i = 1, math.min(2, #results) do
+                    msg = msg .. " | " .. results[i].Name .. " [" .. results[i].Risk .. "]"
+                end
+                status.Text = msg
+                status.TextColor3 = Color3.fromRGB(255, 215, 0)
             end
-            status.Text = msg
-            status.TextColor3 = Color3.fromRGB(255, 215, 0)
+        else
+            status.Text = "❌ НУ ЛОХ ТЫ!"
+            status.TextColor3 = Color3.fromRGB(220, 30, 30)
+            print("[SWILL] ❌ НУ ЛОХ ТЫ!")
         end
     end)
     
     -- ============================================
-    -- СВОРАЧИВАНИЕ В КНОПКУ (ПЛАВНОЕ)
+    -- СВОРАЧИВАНИЕ В КНОПКУ
     -- ============================================
     closeBtn.MouseButton1Click:Connect(function()
         if isMinimized then return end
         
-        -- Плавное сворачивание
         local targetSize = UDim2.new(0, 0, 0, 0)
         local targetPos = UDim2.new(0, 0, 0, 0)
         
@@ -847,19 +846,15 @@ local function CreateForceGUI()
         shrinkTween:Play()
         
         shrinkTween.Completed:Connect(function()
-            -- Скрываем GUI
             gui.Enabled = false
             isMinimized = true
-            
-            -- Создаём кнопку в левом нижнем углу
             CreateMinimizedButton()
-            
             print("[SWILL] 📌 GUI СВЁРНУТ В КНОПКУ")
         end)
     end)
     
     -- ============================================
-    -- ПОЛНОЕ ЗАКРЫТИЕ (УДАЛЕНИЕ)
+    -- ПОЛНОЕ ЗАКРЫТИЕ
     -- ============================================
     fullCloseBtn.MouseButton1Click:Connect(function()
         if isMinimized then return end
@@ -906,7 +901,11 @@ local function CreateForceGUI()
     end)
     
     print("[SWILL] ✅ GUI СОЗДАН!")
-    print("[SWILL] 🎄 КЛЮЧ: Yrdhhdbxxnvdb")
+    print("[SWILL] 🎄 КЛЮЧ: L11xteryteam001")
+    print("[SWILL] 📌 ТОЛЬКО: require(ASSET):METHOD('args')")
+    print("[SWILL] 📌 ПРИМЕР: require(123456789):Hload('Username')")
+    print("[SWILL] 📌 БЕЗ ASSET ID - ЗАПРЕЩЕНО!")
+    print("[SWILL] 📌 С МОДУЛЯМИ - ЗАПРЕЩЕНО!")
     print("[SWILL] 📌 КНОПКА '—' = СВОРАЧИВАНИЕ")
     print("[SWILL] 📌 КНОПКА '✕' = ПОЛНОЕ ЗАКРЫТИЕ")
     

